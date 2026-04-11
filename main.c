@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <wchar.h>
+#include <stdlib.h>
 
 typedef struct {
     void * ptr;
@@ -101,7 +101,7 @@ int main() {
 
     printf("Entries count: %d\n", entriesCount);
     if (entriesCount > 0 && headerless == 0) {
-        _wmkdir(L"output");
+        system("mkdir output");
     }
     for (int i = 0; i < entriesCount; i++) {
         const struct ROSFileEntry * entry = (struct ROSFileEntry *)data.ptr + i;
