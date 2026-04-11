@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <wchar.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct {
     void * ptr;
@@ -33,8 +34,8 @@ struct ROSFileEntry {
 
 #pragma pack(pop)
 
-FileData loadFile() {
-    FILE * f = fopen("ros.bin", "rb");
+FileData loadFile(char * fileName) {
+    FILE * f = fopen(fileName, "rb");
     if (f == NULL) {
         printf("Error opening file\n");
         return (FileData){NULL, 0};
@@ -71,8 +72,13 @@ char isHeaderless(const FileData *data) {
     return isValidFileName((char*) tryParse->name, 5);
 }
 
-int main() {
-    const FileData result = loadFile();
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("%s <fileName> <outputDir>\n", argv[0]);
+        return 1;
+    }
+
+    const FileData result = loadFile(argv[0]);
     FileData data = result;
     if (data.ptr == NULL) return 1;
     const char headerless = isHeaderless(&data);
@@ -101,7 +107,9 @@ int main() {
 
     printf("Entries count: %d\n", entriesCount);
     if (entriesCount > 0 && headerless == 0) {
-        _wmkdir(L"output");
+        char dir[128] = "mkdir ";
+        strcat(dir, argv[2]);
+        system(dir);
     }
     for (int i = 0; i < entriesCount; i++) {
         const struct ROSFileEntry * entry = (struct ROSFileEntry *)data.ptr + i;
@@ -109,7 +117,7 @@ int main() {
 
         if (headerless == 0) {
             char fname[64];
-            snprintf(fname, sizeof(fname), "output/%s", (char*) entry->name);
+            snprintf(fname, sizeof(fname), "%s/%s", argv[2], (char*) entry->name);
             FILE * f = fopen(fname, "wb");
             if (f == NULL) {
                 printf("Error opening file %s\n", fname);
